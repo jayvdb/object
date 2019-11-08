@@ -656,7 +656,8 @@ impl Mangling {
     /// Return the prefix to use for global symbols.
     pub fn global_prefix(self) -> Option<u8> {
         match self {
-            Mangling::None | Mangling::Elf | Mangling::Coff => None,
+            Mangling::None => None,
+            Mangling::Elf | Mangling::Coff => Some(b' '),
             Mangling::CoffI386 | Mangling::Macho => Some(b'_'),
         }
     }
