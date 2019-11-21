@@ -108,25 +108,26 @@ impl<'data> File<'data> {
             return Err("File too short");
         }
 
-        let inner = match [data[0], data[1], data[2], data[3]] {
+        let inner = match [data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]] {
             // ELF
-            [0x7f, b'E', b'L', b'F'] => FileInternal::Elf(elf::ElfFile::parse(data)?),
+            [0x7f, b'E', b'L', b'F', _, _, _, _] => FileInternal::Elf(elf::ElfFile::parse(data)?),
             // 32-bit Mach-O
-            [0xfe, 0xed, 0xfa, 0xce]
-            | [0xce, 0xfa, 0xed, 0xfe]
+            [0xfe, 0xed, 0xfa, 0xce, _, _, _, _]
+            | [0xce, 0xfa, 0xed, 0xfe, _, _, _, _]
             // 64-bit Mach-O
-            | [0xfe, 0xed, 0xfa, 0xcf]
-            | [0xcf, 0xfa, 0xed, 0xfe] => FileInternal::MachO(macho::MachOFile::parse(data)?),
+            | [0xfe, 0xed, 0xfa, 0xcf, _, _, _, _]
+            | [0xcf, 0xfa, 0xed, 0xfe, _, _, _, _] => FileInternal::MachO(macho::MachOFile::parse(data)?),
             // WASM
             #[cfg(feature = "wasm")]
-            [0x00, b'a', b's', b'm'] => FileInternal::Wasm(wasm::WasmFile::parse(data)?),
+            [0x00, b'a', b's', b'm', _, _, _, _] => FileInternal::Wasm(wasm::WasmFile::parse(data)?),
             // MS-DOS, assume stub for Windows PE
-            [b'M', b'Z', _, _] => FileInternal::Pe(pe::PeFile::parse(data)?),
+            [b'M', b'Z', _, _, _, _, _, _] => FileInternal::Pe(pe::PeFile::parse(data)?),
             // TODO: more COFF machines
             // COFF x86
-            [0x4c, 0x01, _, _]
+            [0x4c, 0x01, _, _, _, _, _, _]
+            | [0x00, 0x00, 0xff, 0xff, _, _, 0x64, 0x86]
             // COFF x86-64
-            | [0x64, 0x86, _, _] => FileInternal::Coff(coff::CoffFile::parse(data)?),
+            | [0x64, 0x86, _, _, _, _, _, _] => FileInternal::Coff(coff::CoffFile::parse(data)?),
             _ => return Err("Unknown file magic"),
         };
         Ok(File { inner })
