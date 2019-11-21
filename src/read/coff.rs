@@ -84,7 +84,7 @@ impl<'data> CoffFile<'data> {
 
     /// Parse the raw COFF file data.
     pub fn parse(data: &'data [u8]) -> Result<Self, &'static str> {
-        let coff = pe::Coff::parse(data).map_err(|_| "Could not parse COFF header")?;
+        let coff = pe::Coff::parse(data).unwrap();
         Ok(CoffFile { coff, data })
     }
 }
